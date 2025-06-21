@@ -7,17 +7,20 @@ class TangDowellWing:
     a study by D. Tang and E.H. Dowell
     """
     def __init__(self, n_c: int, n_s: int, spacing_c: str, spacing_s: str):
-        # vlm discretisation
+        # vlm discretisation parameters
         self.n_c = n_c                                                      # number of chordwise panels
         self.n_s = n_s                                                      # number of spanwise panels
-        self.wingpoints = self.generate_point_mesh(spacing_c, spacing_s)    # generate point mesh of the wing upon initialisation
-
+        
         # geometric parameters
         self.semi_span = 0.451                              # [m] semi span of the wing
         self.chord = 0.051                                  # [m] wing chord (constant along span)
         self.beam_mass = 0.2351                             # [kg/m] beam mass per unit length
         self.I_p = 0.2056e-4                                # [kg m^2/m] polar moment of inertia scaled with beam density per unit length (rho * I_p)
         self.d = 0.000508                                   # [m] distance from cross-sectional CG to the elastic axis, positive when CG is more aft than EA
+
+        # create discretisation (needs geometric params)
+        self.wingpoints = self._generate_point_mesh(spacing_c, spacing_s)   # generate point mesh of the wing upon initialisation
+        self._panel_information()                                           # calculates attributes for panel information
 
         # structural parameters
         self.EI = 0.4186                                    # [Nm^2] bending stiffness
@@ -32,7 +35,7 @@ class TangDowellWing:
         self.dmo_d = 0.0                                    # [m] distance of the discrete mass object to the elastic axis
         self.dmo_I = 0.9753e-4                              # [kg m^2] dmo moment of inertia around the cg
 
-    def generate_point_mesh(self, spacing_c: str, spacing_s: str) -> np.ndarray:
+    def _generate_point_mesh(self, spacing_c: str, spacing_s: str) -> np.ndarray:
         """
         Generate a point mesh of the wing
         """
@@ -54,10 +57,17 @@ class TangDowellWing:
             raise ValueError(f"Parameter `spacing_s` can be 'constant' or 'cosine', got: {spacing_s}")
         # make point mesh 
         points = np.zeros((self.n_c + 1, self.n_s + 1, 3))      # z coordinate remains 0 as the wing airfoil has no camber (NACA 0010)
-        points[:, :, 0] = x                                     # broadcast x
-        points[:, :, 1] = y                                     # broadcast y
+        points[:, :, 0] = x[:, np.newaxis]                      # broadcast x
+        points[:, :, 1] = y[np.newaxis, :]                      # broadcast y
 
         return points
+    
+    def _panel_information(self):
+        self.panel_corner_points()
+        self.vortex_ring_corner_points()
+        self.panel_vectors()
+        self.panel_centre_of_pressure()
+        self.panel_control_point()
 
     def panel_corner_points(self):
 
@@ -98,3 +108,21 @@ class TangDowellWing:
     def panel_control_point(self):
         avg_panel_height = 0.5*(self.Ek + (self.P4s - self.P3s))
         self.panel_cntrl = self.panel_cop + 0.5*avg_panel_height
+
+    def plot_wing(self):
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+
+        ax.plot_wireframe(self.wingpoints[:, :, 0], self.wingpoints[:, :, 1], self.wingpoints[:, :, 2], color = 'b')
+
+        ax.set_xlabel('x [m]')
+        ax.set_ylabel('y [m]')
+        ax.set_zlabel('z [m]')
+        ax.set_title('Wing point mesh')
+        ax.set_aspect('equal')
+
+        plt.show()
+
+if __name__ == "__main__":
+    wing = TangDowellWing(5, 25, spacing_c="constant", spacing_s="constant")
+    wing.plot_wing()

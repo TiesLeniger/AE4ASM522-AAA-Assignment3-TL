@@ -47,6 +47,16 @@ def v_ind_by_straight_filament(points: np.ndarray, startpoints: np.ndarray, endp
 
     return v_induced
 
+def v_ind_by_vortex_ring(points: np.ndarray, A: np.ndarray, B: np.ndarray, C: np.ndarray, D: np.ndarray, gamma: Union[float, np.ndarray], threshold: float = 1e-6):
+
+    v_AB = v_ind_by_straight_filament(points, A, B, gamma, threshold)
+    v_BC = v_ind_by_straight_filament(points, B, C, gamma, threshold)
+    v_CD = v_ind_by_straight_filament(points, C, D, gamma, threshold)
+    v_DA = v_ind_by_straight_filament(points, D, A, gamma, threshold)
+
+    return v_AB + v_BC + v_CD + v_DA
+
+
 if __name__ == "__main__":
     points = np.array([[0.0, 0.0, 0.0]])
     startpoints = np.array([[1.0, 1.0, 0.0]])

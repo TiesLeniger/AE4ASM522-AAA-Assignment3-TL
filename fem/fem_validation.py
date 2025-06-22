@@ -1,6 +1,5 @@
 import numpy as np
 
-
 def beam_FF_modes_bending(constant):
     """
     Calculates the first 5 eigen frequencies and modes of a free-free beam in pure bending with constant mass and
@@ -43,7 +42,6 @@ def beam_FF_modes_bending(constant):
         phi.append(phi_i)
 
     return omega, y, phi
-
 
 def beam_CF_modes_bending(constant):
     """
@@ -88,7 +86,6 @@ def beam_CF_modes_bending(constant):
 
     return omega, y, phi
 
-
 def beam_FF_modes_torsion(constant):
     """
     Calculates the first 5 eigen frequencies and modes of a free-free beam in pure TORSION with constant mass and
@@ -126,7 +123,6 @@ def beam_FF_modes_torsion(constant):
         phi.append(phi_i)
 
     return omega, y, phi
-
 
 def beam_CF_modes_torsion(constant):
     """
@@ -166,7 +162,6 @@ def beam_CF_modes_torsion(constant):
 
     return omega, y, phi
 
-
 def beam_CF_constant_distributed_load(q, r, constant):
     """
     Caclulates a bendiding and torsional response to a constant distributed shear force,[N/m], and torque, [Nm/m], for a
@@ -189,7 +184,6 @@ def beam_CF_constant_distributed_load(q, r, constant):
     theta = r*(2*l*y - y**2)/(2*GJ)
 
     return y, w, theta
-
 
 def beam_CF_constant_tip_load(V, T, constant):
     """

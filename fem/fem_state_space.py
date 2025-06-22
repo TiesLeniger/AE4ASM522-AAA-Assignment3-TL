@@ -1,8 +1,8 @@
 import numpy as np
 from scipy import linalg as ln
 
-import FEM.fem_linear as fe
-import FEM.fem_loads as fl
+import fem.fem_linear as fe
+import fem.fem_loads as fl
 
 def ss_fem_lin(fem, dmo = None):
     """
@@ -60,7 +60,6 @@ def ss_fem_lin(fem, dmo = None):
     }
 
     return SS
-
 
 def ss_fem_qsae_lin(U, fem, tsm, dmo = None):
     """
@@ -124,7 +123,6 @@ def ss_fem_qsae_lin(U, fem, tsm, dmo = None):
 
     return SS
 
-
 def ss_fem_qsae_lin2(U, fem, tsm, dmo = None):
     """
     todo: add the output matrices for aerodynamic loads
@@ -186,7 +184,6 @@ def ss_fem_qsae_lin2(U, fem, tsm, dmo = None):
     }
 
     return SS
-
 
 def ss_fem_usae_lin(U, fem, tsm, dmo = None):
     """
@@ -255,7 +252,6 @@ def ss_fem_usae_lin(U, fem, tsm, dmo = None):
 
     return SS
 
-
 def beam_ae_lin(x, U, fem, tsm, dmo = None):
     """
     todo: Add the distribution matrix for discrete forces and combine it with the distribution matrix for distributed forces
@@ -311,7 +307,6 @@ def beam_ae_lin(x, U, fem, tsm, dmo = None):
 
     return xprime
 
-
 def beam_qsae_lin(x, U, fem, tsm, dmo = None):
     """
     todo: Add the distribution matrix for discrete forces and combine it with the distribution matrix for distributed forces
@@ -361,7 +356,6 @@ def beam_qsae_lin(x, U, fem, tsm, dmo = None):
     xprime = Q.dot(x)
 
     return xprime
-
 
 def beam_qsae_lin2(x, U, fem, tsm, dmo = None):
     """

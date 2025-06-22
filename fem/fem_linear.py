@@ -1,6 +1,5 @@
 import numpy as np
 
-
 def get_constant_fem():
     """
     Default properties of a span-wise uniform beam.
@@ -26,7 +25,6 @@ def get_constant_fem():
     }
 
     return constant
-
 
 def initialise_fem(const_fem):
     """
@@ -95,7 +93,6 @@ def initialise_fem(const_fem):
 
     return fem
 
-
 def initialise_dmo(const_dmo, fem):
     """
 
@@ -125,7 +122,6 @@ def initialise_dmo(const_dmo, fem):
         }
 
     return dmo
-
 
 def elem_mass(l, m, Ip, d):
     """
@@ -177,7 +173,6 @@ def elem_mass(l, m, Ip, d):
 
     mat_M[5, 5] = m*l**3/105.0
     return mat_M
-
 
 def mat_mass(fem, dmo = None):
     """
@@ -267,7 +262,6 @@ def mat_mass(fem, dmo = None):
 
     return MM_red
 
-
 def elem_stiffness(l, EI, GJ, KBT):
     """
     calculates an elemental stiffness matrix.
@@ -314,7 +308,6 @@ def elem_stiffness(l, EI, GJ, KBT):
 
     mat_K[5, 5] = mat_K[2, 2]
     return mat_K
-
 
 def mat_stiffness(fem):
     """

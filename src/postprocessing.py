@@ -17,16 +17,16 @@ def postprocessing(results: list, wing: TangDowellWing, rho: float, v_inf: float
 
         # Lift
         delta_Lij = np.zeros_like(gamma)
-        delta_Lij[0, :] = rho*v_inf*gamma[0, :]*wing.panel_widths[0, :]
-        delta_Lij[1:, :] = rho*v_inf*(gamma[1:, :] - gamma[:-1, :])*wing.panel_widths[1:, :]
+        delta_Lij[0, :] = -rho*v_inf*gamma[0, :]*wing.panel_widths[0, :]
+        delta_Lij[1:, :] = -rho*v_inf*(gamma[1:, :] - gamma[:-1, :])*wing.panel_widths[1:, :]
         L_tot = np.sum(delta_Lij)
         C_L.append(L_tot/(0.5*rho*v_inf*v_inf*wing.wing_area))
 
         # Drag
         downwash = (result['downwash']).reshape((wing.n_c, wing.n_s))
         delta_Dij = np.zeros_like(downwash)
-        delta_Dij[0, :] = -rho*downwash[0, :]*gamma[0, :]*wing.panel_widths[0, :]
-        delta_Dij[1:, :] = -rho*downwash[1:, :]*(gamma[1:, :] - gamma[:-1, :])*wing.panel_widths[1:, :]
+        delta_Dij[0, :] = rho*downwash[0, :]*gamma[0, :]*wing.panel_widths[0, :]
+        delta_Dij[1:, :] = rho*downwash[1:, :]*(gamma[1:, :] - gamma[:-1, :])*wing.panel_widths[1:, :]
         D_tot = np.sum(delta_Dij)
         C_D.append(D_tot/(0.5*rho*v_inf*v_inf*wing.wing_area))
 

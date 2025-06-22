@@ -49,7 +49,7 @@ class TangDowellWing:
             raise ValueError(f"Parameter `spacing_c` can be 'constant' or 'cosine', got: {spacing_c}")
         # discretisation in y
         if spacing_s == "cosine":
-            beta = np.linspace(np.pi/2, 0.0, num = self.n_s + 1)
+            beta = np.linspace(np.pi, 0.0, num = self.n_s + 1)
             y = self.semi_span*np.cos(beta)
         elif spacing_s == "constant":
             y = np.linspace(0.0, self.semi_span, num = self.n_s + 1)
@@ -59,11 +59,6 @@ class TangDowellWing:
         points = np.zeros((self.n_c + 1, self.n_s + 1, 3))      # z coordinate remains 0 as the wing airfoil has no camber (NACA 0010)
         points[:, :, 0] = x[:, np.newaxis]                      # broadcast x
         points[:, :, 1] = y[np.newaxis, :]                      # broadcast y
-        mirror_points = np.copy(points)
-        mirror_points[:, :, 1] *= -1
-        mirror_points = np.flip(mirror_points, axis = 1)
-        points = np.concatenate((mirror_points[:, :-1, :], points), axis = 1)
-        self.n_s *= 2
 
         return points
     

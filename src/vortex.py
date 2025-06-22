@@ -1,15 +1,15 @@
 import numpy as np
 from typing import Union
 
-def v_ind_by_straight_filament(points: np.ndarray, startpoints: np.ndarray, endpoints: np.ndarray, gamma: Union[float, np.ndarray], threshold: float = 1e-6):
+def v_ind_by_straight_filament(points: np.ndarray, startpoints: np.ndarray, endpoints: np.ndarray, gamma: Union[float, np.ndarray], threshold: float = 1e-9):
     points = points.reshape(-1, 3)[:, None, :]              # (N, 1, 3)
     startpoints = startpoints.reshape(-1, 3)[None, :, :]    # (1, M, 3)
     endpoints = endpoints.reshape(-1, 3)[None, :, :]        # (1, M, 3)
     N, M = points.shape[0], startpoints.shape[1]
 
     r0 = endpoints - startpoints                            # (1, M, 3)
-    r1 = points - startpoints                               # (N, M, 3)
-    r2 = points - endpoints                                 # (N, M, 3)
+    r1 = startpoints - points                               # (N, M, 3)
+    r2 = endpoints - points                                 # (N, M, 3)
     norm_r1 = np.linalg.norm(r1, axis=2, keepdims=True)
     norm_r2 = np.linalg.norm(r2, axis=2, keepdims=True)
 
@@ -47,7 +47,7 @@ def v_ind_by_straight_filament(points: np.ndarray, startpoints: np.ndarray, endp
 
     return v_induced
 
-def v_ind_by_vortex_ring(points: np.ndarray, A: np.ndarray, B: np.ndarray, C: np.ndarray, D: np.ndarray, gamma: Union[float, np.ndarray], threshold: float = 1e-6, return_w: bool = False):
+def v_ind_by_vortex_ring(points: np.ndarray, A: np.ndarray, B: np.ndarray, C: np.ndarray, D: np.ndarray, gamma: Union[float, np.ndarray], threshold: float = 1e-9, return_w: bool = False):
 
     v_AB = v_ind_by_straight_filament(points, A, B, gamma, threshold)
     v_BC = v_ind_by_straight_filament(points, B, C, gamma, threshold)

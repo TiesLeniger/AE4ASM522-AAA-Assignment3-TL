@@ -59,6 +59,11 @@ class TangDowellWing:
         points = np.zeros((self.n_c + 1, self.n_s + 1, 3))      # z coordinate remains 0 as the wing airfoil has no camber (NACA 0010)
         points[:, :, 0] = x[:, np.newaxis]                      # broadcast x
         points[:, :, 1] = y[np.newaxis, :]                      # broadcast y
+        mirror_points = np.copy(points)
+        mirror_points[:, :, 1] *= -1
+        mirror_points = np.flip(mirror_points, axis = 1)
+        points = np.concatenate((mirror_points[:, :-1, :], points), axis = 1)
+        self.n_s *= 2
 
         return points
     
@@ -68,6 +73,7 @@ class TangDowellWing:
         self.panel_vectors()
         self.panel_centre_of_pressure()
         self.panel_control_point()
+        self.panel_width()
 
     def panel_corner_points(self):
 
@@ -117,28 +123,26 @@ class TangDowellWing:
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
 
-        ax.plot_wireframe(self.wingpoints[:, :, 0], self.wingpoints[:, :, 1], self.wingpoints[:, :, 2], color = 'blue')
-        ax.plot_wireframe(self.wingpoints[:, :, 0], -1*self.wingpoints[:, :, 1], self.wingpoints[:, :, 2], color = 'blue', alpha = 0.5)
+        ax.plot_wireframe(self.wingpoints[:, :, 0], self.wingpoints[:, :, 1], self.wingpoints[:, :, 2], color='blue')
 
         ax.set_xlabel('x [m]')
         ax.set_ylabel('y [m]')
         ax.set_zlabel('z [m]')
         ax.set_title('Wing point mesh')
 
-        # Set equal aspect ratio with padding
-        X = self.wingpoints[:, :, 0]
+        # Use y (span) as the reference for all axis limits
         Y = self.wingpoints[:, :, 1]
+        y_max = Y.max()
+        pad = y_max * 0.1
+
+        # Center x and z at their midpoints
+        X = self.wingpoints[:, :, 0]
         Z = self.wingpoints[:, :, 2]
-        max_range = np.array([X.max()-X.min(), Y.max()-Y.min(), Z.max()-Z.min()]).max() / 2.0
+        x_mid = 0.5 * (X.min() + X.max())
+        z_mid = 0.5 * (Z.min() + Z.max())
 
-        mid_x = (X.max()+X.min()) * 0.5
-        mid_y = (Y.max()+Y.min()) * 0.5
-        mid_z = (Z.max()+Z.min()) * 0.5
-
-        # Add a little padding (e.g., 10%)
-        pad = max_range * 0.1
-        ax.set_xlim(mid_x - max_range - pad, mid_x + max_range + pad)
-        ax.set_ylim(-mid_y - max_range - pad, mid_y + max_range + pad)  # Symmetric about y=0
-        ax.set_zlim(mid_z - max_range - pad, mid_z + max_range + pad)
+        ax.set_xlim(x_mid - y_max - pad, x_mid + y_max + pad)
+        ax.set_ylim(-y_max - pad, y_max + pad)
+        ax.set_zlim(z_mid - y_max - pad, z_mid + y_max + pad)
 
         plt.show()

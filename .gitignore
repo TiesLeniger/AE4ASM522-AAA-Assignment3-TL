@@ -181,3 +181,6 @@ cython_debug/
 .cursorindexingignore
 
 supplied codes/
+
+output/*
+!output/.gitkeep

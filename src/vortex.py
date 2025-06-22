@@ -55,12 +55,3 @@ def v_ind_by_vortex_ring(points: np.ndarray, A: np.ndarray, B: np.ndarray, C: np
     v_DA = v_ind_by_straight_filament(points, D, A, gamma, threshold)
 
     return v_AB + v_BC + v_CD + v_DA
-
-
-if __name__ == "__main__":
-    points = np.array([[0.0, 0.0, 0.0]])
-    A = np.array([[1.0, -1.0, 0.0]])
-    B = np.array([[-1.0, -1.0, 0.0]])
-    C = np.array([[-1.0, 1.0, 0.0]])
-    D = np.array([[1.0, 1.0, 0.0]])
-    print(v_ind_by_vortex_ring(points, A, B, C, D, 1))

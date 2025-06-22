@@ -122,7 +122,3 @@ class TangDowellWing:
         ax.set_aspect('equal')
 
         plt.show()
-
-if __name__ == "__main__":
-    wing = TangDowellWing(5, 25, spacing_c="constant", spacing_s="constant")
-    wing.plot_wing()

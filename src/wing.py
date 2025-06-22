@@ -100,6 +100,7 @@ class TangDowellWing:
         cross_product = np.cross(self.Ak, self.Bk, axis = 2)
         self.panel_normal = cross_product/np.linalg.norm(cross_product, axis = 2, keepdims = True)
         self.panel_area = 0.5*(np.linalg.norm(np.cross(self.Fk, self.Bk, axis = 2), axis = 2) + np.linalg.norm(np.cross(self.Bk, self.Ek, axis = 2), axis = 2))
+        self.wing_area = 2*np.sum(self.panel_area)
 
     def panel_centre_of_pressure(self):
         BC = self.C - self.B
@@ -108,6 +109,9 @@ class TangDowellWing:
     def panel_control_point(self):
         avg_panel_height = 0.5*(self.Ek + (self.P4s - self.P3s))
         self.panel_cntrl = self.panel_cop + 0.5*avg_panel_height
+
+    def panel_width(self):
+        self.panel_widths = 0.5*((self.P3s[:, :, 1]-self.P2s[:, :, 1])+(self.P4s[:, :, 1]-self.P1s[:, :, 1]))
 
     def plot_wing(self):
         fig = plt.figure()

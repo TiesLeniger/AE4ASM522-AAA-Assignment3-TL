@@ -184,3 +184,5 @@ supplied codes/
 
 output/*
 !output/.gitkeep
+input/*
+!input/.gitkeep

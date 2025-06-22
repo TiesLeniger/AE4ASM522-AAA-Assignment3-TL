@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from wing import TangDowellWing
+from src.wing import TangDowellWing
 from pathlib import Path
 
 def postprocessing(results: list, wing: TangDowellWing, rho: float, v_inf: float, make_plots: bool = True, save_plots: bool = False):

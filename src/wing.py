@@ -117,12 +117,28 @@ class TangDowellWing:
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
 
-        ax.plot_wireframe(self.wingpoints[:, :, 0], self.wingpoints[:, :, 1], self.wingpoints[:, :, 2], color = 'b')
+        ax.plot_wireframe(self.wingpoints[:, :, 0], self.wingpoints[:, :, 1], self.wingpoints[:, :, 2], color = 'blue')
+        ax.plot_wireframe(self.wingpoints[:, :, 0], -1*self.wingpoints[:, :, 1], self.wingpoints[:, :, 2], color = 'blue', alpha = 0.5)
 
         ax.set_xlabel('x [m]')
         ax.set_ylabel('y [m]')
         ax.set_zlabel('z [m]')
         ax.set_title('Wing point mesh')
-        ax.set_aspect('equal')
+
+        # Set equal aspect ratio with padding
+        X = self.wingpoints[:, :, 0]
+        Y = self.wingpoints[:, :, 1]
+        Z = self.wingpoints[:, :, 2]
+        max_range = np.array([X.max()-X.min(), Y.max()-Y.min(), Z.max()-Z.min()]).max() / 2.0
+
+        mid_x = (X.max()+X.min()) * 0.5
+        mid_y = (Y.max()+Y.min()) * 0.5
+        mid_z = (Z.max()+Z.min()) * 0.5
+
+        # Add a little padding (e.g., 10%)
+        pad = max_range * 0.1
+        ax.set_xlim(mid_x - max_range - pad, mid_x + max_range + pad)
+        ax.set_ylim(-mid_y - max_range - pad, mid_y + max_range + pad)  # Symmetric about y=0
+        ax.set_zlim(mid_z - max_range - pad, mid_z + max_range + pad)
 
         plt.show()

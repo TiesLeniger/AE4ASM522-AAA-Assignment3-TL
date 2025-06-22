@@ -24,7 +24,7 @@ def make_wake_im(wing: TangDowellWing, alpha: float, l_wake_c: int) -> np.ndarra
 def make_right_hand_side(wing: TangDowellWing, v_inf: float, alpha: float) -> np.ndarray:
 
     v_inf = (v_inf * np.array([np.cos(alpha), 0.0, np.sin(alpha)]))[None, :]
-    rhs = np.sum(v_inf * wing.panel_normal.reshape(-1, 3), axis = 1, keepdims = False)
+    rhs = np.sum(-v_inf * wing.panel_normal.reshape(-1, 3), axis = 1, keepdims = False)
 
     return rhs
 

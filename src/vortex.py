@@ -8,8 +8,8 @@ def v_ind_by_straight_filament(points: np.ndarray, startpoints: np.ndarray, endp
     N, M = points.shape[0], startpoints.shape[1]
 
     r0 = endpoints - startpoints                            # (1, M, 3)
-    r1 = startpoints - points                               # (N, M, 3)
-    r2 = endpoints - points                                 # (N, M, 3)
+    r1 = points - startpoints                               # (N, M, 3)
+    r2 = points - endpoints                                 # (N, M, 3)
     norm_r1 = np.linalg.norm(r1, axis=2, keepdims=True)
     norm_r2 = np.linalg.norm(r2, axis=2, keepdims=True)
 

@@ -7,7 +7,7 @@ D2R = np.pi/180
 R2D = 180/np.pi
 
 # Instantiate wing
-wing = TangDowellWing(4, 8, "constant", "cosine")
+wing = TangDowellWing(4, 6, "constant", "cosine")
 
 # Define operating conditions
 rho = 1.225                         # [kg/m^3], air density

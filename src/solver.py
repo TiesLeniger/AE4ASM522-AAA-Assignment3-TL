@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.sparse.linalg import gmres
-from vlm.vortex import *
-from vlm.wing import TangDowellWing
+from src.vortex import *
+from src.wing import TangDowellWing
 from typing import Union
 
 def make_bound_im(wing: TangDowellWing) -> np.ndarray:

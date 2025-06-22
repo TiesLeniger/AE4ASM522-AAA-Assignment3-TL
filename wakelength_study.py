@@ -1,9 +1,9 @@
 import matplotlib.pyplot as plt
 
-from src.wing import TangDowellWing
-from src.vortex import *
-from src.solver import *
-from src.postprocessing import postprocessing
+from vlm.wing import TangDowellWing
+from vlm.vortex import *
+from vlm.solver import *
+from vlm.postprocessing import postprocessing
 
 D2R = np.pi/180
 

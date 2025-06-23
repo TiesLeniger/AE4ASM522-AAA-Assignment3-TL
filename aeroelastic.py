@@ -52,5 +52,5 @@ while it < max_iter:
 
     r, f, q = wing.map_aero_to_displ(delta_Lij, alpha)
     xi = wing.fem.calculate_displacement(r, f, q)
-    xi = xi.reshape(-1, 3)
-    xi = (np.concatenate((np.flip(xi, axis = 0), xi), axis = 0)).flatten()
+    # xi = xi.reshape(-1, 3)
+    # xi = (np.concatenate((np.flip(xi, axis = 0), xi), axis = 0)).flatten()

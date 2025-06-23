@@ -181,7 +181,7 @@ class TangDowellWing:
         moment_vector = np.cross(r_ij, delta_Lij, axis = 1)
         r = np.zeros_like(f)
         q = np.zeros_like(f)
-        r[nn_idcs] = moment_vector[1]
-        q[nn_idcs] = moment_vector[0]
+        r[nn_idcs] = moment_vector[:, 1]
+        q[nn_idcs] = moment_vector[:, 0]
 
         return r, f, q

@@ -27,7 +27,7 @@ class FEMBeam:
             dmo_dict = json_dict['dmo']
             self._init_dmo_properties(dmo_dict)
         else:
-            self.dmo = None
+            self.n_dmo = 0
 
         self.stiffness_matrix()                                     # Initialise stiffness matrix
         self.discrete_force_matrix()                                # Initialise discrete force matrix
@@ -234,18 +234,19 @@ class FEMBeam:
     
     def calculate_displacement(self, r: np.ndarray, f: np.ndarray, q: np.ndarray) -> np.ndarray:
 
-        f_weight = - self.m[0] * 9.81 * np.ones(self.n_nd)
+        f_weight = np.zeros(3*self.n_el)
+        f_weight[1::3] = -9.81 * self.m
         structural_weight_load = self.dst_DD_red @ f_weight
         
         external_loads = self.generate_load_vector(r, f, q)
 
         load_vector = structural_weight_load + external_loads
 
-        if self.dmo is not None:
-            dmo_nodal_forces = np.zeros((self.n_nd, 3))
+        if self.n_dmo > 0:
+            dmo_nodal_forces = np.zeros((self.n_el, 3))
             for i in range(self.n_dmo):
                 node_idx = np.argmin(np.abs(self.y_nd - self.y_dmo[i]))
-                dmo_nodal_forces[node_idx, 1] += -self.m_dmo[i] * 9.81
+                dmo_nodal_forces[node_idx-1, 1] += -self.m_dmo[i] * 9.81
             dmo_vec = dmo_nodal_forces.flatten()
             dmo_load_red = self.dsc_DD_red @ dmo_vec
             load_vector += dmo_load_red

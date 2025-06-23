@@ -26,6 +26,12 @@ class FEMBeam:
         if "dmo" in json_dict and json_dict['dmo']:                     # Check if it is present and non empty
             dmo_dict = json_dict['dmo']
             self._init_dmo_properties(dmo_dict)
+        else:
+            self.dmo = None
+
+        self.stiffness_matrix()                                     # Initialise stiffness matrix
+        self.discrete_force_matrix()                                # Initialise discrete force matrix
+        self.distributed_force_matrix()                             # Initialise distributed force matrix
 
     def _init_fem_properties(self, fem_dict: dict):
         self.n_el = fem_dict['n_el']
@@ -230,10 +236,19 @@ class FEMBeam:
 
         f_weight = - self.m[0] * 9.81 * np.ones(self.n_nd)
         structural_weight_load = self.dst_DD_red @ f_weight
-
+        
         external_loads = self.generate_load_vector(r, f, q)
 
         load_vector = structural_weight_load + external_loads
+
+        if self.dmo is not None:
+            dmo_nodal_forces = np.zeros((self.n_nd, 3))
+            for i in range(self.n_dmo):
+                node_idx = np.argmin(np.abs(self.y_nd - self.y_dmo[i]))
+                dmo_nodal_forces[node_idx, 1] += -self.m_dmo[i] * 9.81
+            dmo_vec = dmo_nodal_forces.flatten()
+            dmo_load_red = self.dsc_DD_red @ dmo_vec
+            load_vector += dmo_load_red
 
         u_red = np.linalg.solve(self.KK_red, load_vector)
 

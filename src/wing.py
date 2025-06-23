@@ -22,6 +22,7 @@ class TangDowellWing:
 
         # structural modelling
         self.fem = FEMBeam("wing_TangDowell.json")
+        self._nearest_node()                                                # Attributes an array (nearest_node_indices) to self
 
     def _generate_point_mesh(self, spacing_c: str, spacing_s: str) -> np.ndarray:
         """
@@ -57,6 +58,14 @@ class TangDowellWing:
         self.panel_centre_of_pressure()
         self.panel_control_point()
         self.panel_width()
+
+    def _nearest_node(self):
+        
+        y_cops = self.panel_cop[0, int(self.n_s/2), 1]               # Rectangular wing means that all panels in a chordwise row have the same y_cop (only consider right side)
+        y_cops = y_cops[:, None]
+        y_nd = self.fem.y_nd[None, :]
+        diff_y = np.abs(y_cops - y_nd)
+        self.nearest_node_indices = np.argmin(diff_y, axis = 1)
 
     def panel_corner_points(self):
 

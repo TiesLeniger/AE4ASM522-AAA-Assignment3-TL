@@ -24,6 +24,7 @@ class TangDowellWing:
         self.a_ea = 0.5                                                     # distance LE to EA as a fraction of the chord
         self.fem = FEMBeam("wing_TangDowell.json")
         self._nearest_node()                                                # Attributes an array (nearest_node_indices) to self
+        self.mapping_matrix()
 
     def _generate_point_mesh(self, spacing_c: str, spacing_s: str) -> np.ndarray:
         """
@@ -62,7 +63,7 @@ class TangDowellWing:
 
     def _nearest_node(self):
         
-        y_cops = self.panel_cop[0, int(self.n_s/2), 1]               # Rectangular wing means that all panels in a chordwise row have the same y_cop (only consider right side)
+        y_cops = self.panel_cop[0, int(self.n_s/2):, 1]               # Rectangular wing means that all panels in a chordwise row have the same y_cop (only consider right side)
         y_cops = y_cops[:, None]
         y_nd = self.fem.y_nd[None, :]
         diff_y = np.abs(y_cops - y_nd)
@@ -75,10 +76,12 @@ class TangDowellWing:
         coords_nodes[:, 1] = self.fem.y_nd
         self.fem_node_coordinates = coords_nodes
 
-        panel_cop_right = self.panel_cop[:, self.n_s//2, :]
+        panel_cop_right = self.panel_cop[:, self.n_s//2:, :]
         nearest_coords_nodes = coords_nodes[nearest_node_indices, :]
 
         self.node_to_panel_vectors = panel_cop_right - nearest_coords_nodes
+
+        print(self.node_to_panel_vectors)
 
     def panel_corner_points(self):
 
@@ -155,7 +158,7 @@ class TangDowellWing:
     def mapping_matrix(self):
 
         cops = self.panel_cop.reshape(-1, 3)
-        nearest_node_indices = self.nearest_node_indices.reshape(-1, 3)
+        nearest_node_indices = self.nearest_node_indices.flatten()
         
         def _last_row_W_matrix(fem_node_coordinate: np.ndarray, panel_cop_coordinate: np.ndarray):
             r_ij = panel_cop_coordinate - fem_node_coordinate

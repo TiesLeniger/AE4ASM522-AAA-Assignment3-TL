@@ -110,7 +110,7 @@ class FEMBeam:
         # Create global mass matrix:
         KK = np.zeros((self.n_dof, self.n_dof))
         for i in range(self.n_el):
-            KK[3*i:3*(i + 2), 3*i:3*(i + 2)] += _element_stiffness_matrix(self.L[i], self.EI[i], self.GJ[i], self.KBT[i])
+            KK[3*i:3*(i + 2), 3*i:3*(i + 2)] += _element_stiffness_matrix(self.L_el[i], self.EI[i], self.GJ[i], self.KbT[i])
 
         # Apply boundary conditions:
         self.KK_red = KK[self.b_u, :][:, self.b_u]
@@ -172,7 +172,7 @@ class FEMBeam:
 
         DD = np.zeros((self.n_dof, self.n_dof))
         for i in range(self.n_el):
-            DD[3*i:3*(i + 2), 3*i:3*(i + 2)] += _element_distributed_force_matrix(self.L[i])
+            DD[3*i:3*(i + 2), 3*i:3*(i + 2)] += _element_distributed_force_matrix(self.L_el[i])
 
         self.dst_DD_red = DD[self.b_u, :][:, self.b_u]
 

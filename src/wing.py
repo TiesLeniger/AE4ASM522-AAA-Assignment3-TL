@@ -169,7 +169,6 @@ class TangDowellWing:
             fem_node_coord = self.fem_node_coordinates[nearest_node_indices[i]]
             T_as[i, 3*i:3*i+3] = _last_row_W_matrix(fem_node_coord, cop)
 
-        T_as = np.concatenate((np.flip(T_as, axis = 1)[:, :-1], T_as), axis = 1)                        # Add flipped matrix to itself to account for symmetry
         self.T_as = T_as
 
     def map_aero_to_displ(self, delta_Lij: np.ndarray, alpha: float):

@@ -255,4 +255,4 @@ class FEMBeam:
         u_full = np.zeros(self.n_dof)
         u_full[self.b_u] = u_red
 
-        return u_full.reshape(self.n_nd, 3)
+        return u_full

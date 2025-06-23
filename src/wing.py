@@ -24,7 +24,7 @@ class TangDowellWing:
         self.a_ea = 0.5                                                     # distance LE to EA as a fraction of the chord
         self.fem = FEMBeam("wing_TangDowell.json")
         self._nearest_node()                                                # Attributes an array (nearest_node_indices) to self
-        self.mapping_matrix()
+        self.mapping_displ_to_aero()
 
     def _generate_point_mesh(self, spacing_c: str, spacing_s: str) -> np.ndarray:
         """
@@ -80,8 +80,6 @@ class TangDowellWing:
         nearest_coords_nodes = coords_nodes[nearest_node_indices, :]
 
         self.node_to_panel_vectors = panel_cop_right - nearest_coords_nodes
-
-        print(self.node_to_panel_vectors)
 
     def panel_corner_points(self):
 
@@ -155,7 +153,7 @@ class TangDowellWing:
 
         plt.show()
 
-    def mapping_matrix(self):
+    def mapping_displ_to_aero(self):
 
         cops = self.panel_cop.reshape(-1, 3)
         nearest_node_indices = self.nearest_node_indices.flatten()
@@ -171,4 +169,20 @@ class TangDowellWing:
             fem_node_coord = self.fem_node_coordinates[nearest_node_indices[i]]
             T_as[i, 3*i:3*i+3] = _last_row_W_matrix(fem_node_coord, cop)
 
-        T_as = np.concatenate((np.flip(T_as, axis = 1), T_as), axis = 1)                        # Add flipped matrix to itself to account for symmetry
+        T_as = np.concatenate((np.flip(T_as, axis = 1)[:, :-1], T_as), axis = 1)                        # Add flipped matrix to itself to account for symmetry
+        self.T_as = T_as
+
+    def map_aero_to_displ(self, delta_Lij: np.ndarray, alpha: float):
+        f = np.zeros((self.fem.n_nd,))
+        delta_Lij = delta_Lij[:, self.n_s//2:]
+        delta_Lij = (delta_Lij.flatten())[:, None] * np.array([np.sin(alpha), 0.0, np.cos(alpha)])[None, :]
+        nn_idcs = self.nearest_node_indices.flatten()
+        f[nn_idcs] = delta_Lij[:, 2]
+        r_ij = self.node_to_panel_vectors.reshape(-1, 3)
+        moment_vector = np.cross(r_ij, delta_Lij, axis = 1)
+        r = np.zeros_like(f)
+        q = np.zeros_like(f)
+        r[nn_idcs] = moment_vector[1]
+        q[nn_idcs] = moment_vector[0]
+
+        return r, f, q

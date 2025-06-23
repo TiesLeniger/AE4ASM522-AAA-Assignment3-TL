@@ -63,8 +63,3 @@ def postprocessing(results: list, wing: TangDowellWing, rho: float, v_inf: float
             plt.show()
 
     return C_L, C_D
-
-
-
-
-        

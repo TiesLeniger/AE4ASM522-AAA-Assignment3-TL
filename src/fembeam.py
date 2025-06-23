@@ -55,7 +55,7 @@ class FEMBeam:
         self.S_dmo = self.m_dmo*self.d_dmo
         self.I_dmo = self.m_dmo*self.d_dmo**2 + np.array(dmo_dict['I0'])
 
-    def calculate_stiffness_matrix(self) -> np.ndarray:
+    def stiffness_matrix(self) -> np.ndarray:
         """
         Assembles the global stiffness matrix of the beam.
 
@@ -73,7 +73,7 @@ class FEMBeam:
         :param fem: dictionary with discretised FE model parameters
         :return KK: global stiffness matrix:
         """
-        def _calculate_element_stiffness_matrix(l: float, EI: float, GJ: float, KbT: float) -> np.ndarray:
+        def _element_stiffness_matrix(l: float, EI: float, GJ: float, KbT: float) -> np.ndarray:
             mat_K = np.zeros((6, 6))
 
             mat_K[0, 0] = GJ/l
@@ -104,9 +104,123 @@ class FEMBeam:
         # Create global mass matrix:
         KK = np.zeros((self.n_dof, self.n_dof))
         for i in range(self.n_el):
-            KK[3*i:3*(i + 2), 3*i:3*(i + 2)] += _calculate_element_stiffness_matrix(self.L[i], self.EI[i], self.GJ[i], self.KBT[i])
+            KK[3*i:3*(i + 2), 3*i:3*(i + 2)] += _element_stiffness_matrix(self.L[i], self.EI[i], self.GJ[i], self.KBT[i])
 
         # Apply boundary conditions:
         self.KK_red = KK[self.b_u, :][:, self.b_u]
 
-        
+    def distributed_force_matrix(self) -> np.ndarray:
+        """
+        Assembles the global distributed force matrix for the beam.
+
+        This matrix is used to map distributed loads per unit length (e.g., gravity, aerodynamic lift, or distributed torque, shear, and bending moment)
+        defined along the beam span to equivalent nodal forces and moments in the finite element model.
+
+        The organisation of the DOFs is:
+        ---------------------------------------------------
+        theta_i   -> torsional deflection at node i
+        v_i       -> bending out-of-plane deflection at node i
+        beta_i    -> bending rotation at node i
+        ---------------------------------------------------
+        theta_i+1 -> torsional deflection at node i+1
+        v_i+1     -> bending out-of-plane deflection at node i+1
+        beta_i+1  -> bending rotation at node i+1
+        ---------------------------------------------------
+
+        The resulting reduced matrix (self.DD_red) can be used as:
+            load_vector = self.DD_red @ distributed_load_vector
+
+        :return: None. The reduced distributed force matrix is stored as self.DD_red.
+        """
+        def _element_distributed_force_matrix(l):
+
+            mat_D = np.zeros((6, 6))
+
+            mat_D[0, 0] = l/3.0
+            mat_D[0, 3] = l/6.0
+
+            mat_D[1, 1] = 7.0*l/20
+            mat_D[1, 2] = -0.5
+            mat_D[1, 4] = 3.0*l/20
+            mat_D[1, 5] = -0.5
+
+            mat_D[2, 1] = l**2/20
+            mat_D[2, 2] = l/12.0
+            mat_D[2, 4] = l**2/30
+            mat_D[2, 5] = -l/12.0
+
+            mat_D[3, 0] = l/6.0
+            mat_D[3, 3] = l/3.0
+
+            mat_D[4, 1] = 3.0*l/20.0
+            mat_D[4, 2] = 0.5
+            mat_D[4, 4] = 7.0*l/20.0
+            mat_D[4, 5] = 0.5
+
+            mat_D[5, 1] = -l**2/30.0
+            mat_D[5, 2] = -l/12.0
+            mat_D[5, 4] = -l**2/20
+            mat_D[5, 5] = l/12.0
+
+            return mat_D
+
+        DD = np.zeros((self.n_dof, self.n_dof))
+        for i in range(self.n_el):
+            DD[3*i:3*(i + 2), 3*i:3*(i + 2)] += _element_distributed_force_matrix(self.L[i])
+
+        self.dst_DD_red = DD[self.b_u, :][:, self.b_u]
+
+    def discrete_force_matrix(self) -> np.ndarray:
+        """
+        Assembles the global discrete force matrix for the beam.
+
+        This matrix is used to map discrete nodal loads (such as concentrated torques, shear forces, or bending moments applied directly at the nodes)
+        to the corresponding degrees of freedom (DOFs) in the finite element model.
+
+        The organisation of the DOFs is:
+        ---------------------------------------------------
+        theta_i   -> torsional deflection at node i
+        v_i       -> bending out-of-plane deflection at node i
+        beta_i    -> bending rotation at node i
+        ---------------------------------------------------
+        theta_i+1 -> torsional deflection at node i+1
+        v_i+1     -> bending out-of-plane deflection at node i+1
+        beta_i+1  -> bending rotation at node i+1
+        ---------------------------------------------------
+
+        The resulting reduced matrix (DD_red) can be used as:
+            load_vector = DD_red @ nodal_load_vector
+
+        :return: The reduced discrete force matrix (DD_red), which maps nodal loads to the unknown DOFs.
+        """
+        DD = np.zeros((self.n_dof, self.n_dof))
+        for i in range(self.n_nd):
+            DD[3*i:3*(i + 1), 3*i:3*(i + 1)] += np.identity(3)
+
+        self.dsc_DD_red = DD[self.b_u, :][:, self.b_u]
+
+    def generate_load_vector(self, r: np.ndarray, f: np.ndarray, q: np.ndarray) -> np.ndarray:
+        """
+        This function distributes the loads to an appropriate DOF.
+
+        The input is an array of nodal values of torque, shear force, and bending moment. The size of these arrays must
+        therefore be (n_nd,).
+
+        NOTE:
+        The inputs can be concentrated loads or distributed loads. Depending on the type of the load the correct element
+        force matrix must be used.
+
+        :param fem: dictionary with FEM properties
+        :param r: distributed torque at nodes, [Nm or Nm/m], shape (n_nd,)
+        :param f: distributed shear force at nodes, [N or N/m], shape (n_nd,)
+        :param q: distributed bending moment at nodes, [Nm or Nm/m], shape (n_nd,)
+        :return vec_load_red: load vector at unknown DOFs
+        """
+        vec_load = np.zeros((self.n_dof,))
+        vec_load[0::3] = r
+        vec_load[1::3] = f
+        vec_load[2::3] = q
+
+        vec_load_red = vec_load[self.b_u]
+
+        return vec_load_red

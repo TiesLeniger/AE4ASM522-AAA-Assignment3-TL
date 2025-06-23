@@ -8,7 +8,7 @@ from src.postprocessing import postprocessing
 D2R = np.pi/180
 
 # Instantiate wing
-wing = TangDowellWing(4, 20, "constant", "cosine")
+wing = TangDowellWing(4, 16, "constant", "cosine")
 
 # Define operating conditions
 rho = 1.225                         # [kg/m^3], air density
@@ -21,6 +21,8 @@ l_wake_c = 30
 results = generate_solutions(wing, v_inf, alpha, l_wake_c)
 
 CL, CD = postprocessing(results, wing, rho, v_inf, make_plots = True)
+
+print(CL)
 
 # fig, axs = plt.subplots(1, 2, figsize=(12, 5))
 

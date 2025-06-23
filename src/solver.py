@@ -21,6 +21,13 @@ def make_wake_im(wing: TangDowellWing, alpha: float, l_wake_c: int) -> np.ndarra
 
     return wake_im, wake_dwm
 
+def make_right_hand_side_static(wing: TangDowellWing, v_inf: float, alpha: float) -> np.ndarray:
+    
+    v_inf = (v_inf * np.array([np.cos(alpha), 0.0, np.sin(alpha)]))[None, :]
+    rhs = np.sum(-v_inf * wing.panel_normal.reshape(-1, 3), axis = 1, keepdims = False)
+
+    return rhs
+
 def make_right_hand_side(wing: TangDowellWing, v_inf: float, alpha: float, xi: np.ndarray, mapping_matrix: np.ndarray) -> np.ndarray:
 
     v_inf_norm = v_inf
@@ -45,7 +52,7 @@ def generate_solutions(wing: TangDowellWing, v_inf: float, alpha: float, l_wake_
         full_im, full_dw = np.copy(bound_im), np.copy(bound_dw)
         full_im[:, te_panels_idx:] += wake_im
         full_dw[:, te_panels_idx:] += wake_dw
-        rhs = make_right_hand_side(wing, v_inf, alpha)
+        rhs = make_right_hand_side_static(wing, v_inf, alpha)
         gamma, info = gmres(full_im, rhs)
 
         if info != 0:

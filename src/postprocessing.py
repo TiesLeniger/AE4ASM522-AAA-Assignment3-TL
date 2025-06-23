@@ -19,8 +19,8 @@ def drag_at_panels(gamma: np.ndarray, downwash: np.ndarray, wing: TangDowellWing
     downwash = downwash.reshape((wing.n_c, wing.n_s))                                               # Make sure downwash has the correct shape
 
     delta_Dij = np.zeros_like(gamma)                                                                # Initialize lift array
-    delta_Dij[0, :] = rho*downwash[0, :]*gamma[0, :]*wing.panel_widths[0, :]                        # Lift on LE
-    delta_Dij[1:, :] = rho*downwash[1:, :]*(gamma[1:, :] - gamma[:-1, :])*wing.panel_widths[1:, :]  # Lift on other panels
+    delta_Dij[0, :] = -rho*downwash[0, :]*gamma[0, :]*wing.panel_widths[0, :]                        # Lift on LE
+    delta_Dij[1:, :] = -rho*downwash[1:, :]*(gamma[1:, :] - gamma[:-1, :])*wing.panel_widths[1:, :]  # Lift on other panels
 
     return delta_Dij
 
@@ -42,7 +42,7 @@ def postprocessing(results: list, wing: TangDowellWing, rho: float, v_inf: float
         C_L.append(L_tot/(0.5*rho*v_inf*v_inf*wing.wing_area))
 
         # Drag
-        delta_Dij = drag_at_panels(gamma, results['downwash'], wing, rho)
+        delta_Dij = drag_at_panels(gamma, result['downwash'], wing, rho)
         D_tot = np.sum(delta_Dij)
         C_D.append(D_tot/(0.5*rho*v_inf*v_inf*wing.wing_area))
 

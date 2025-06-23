@@ -21,6 +21,7 @@ class TangDowellWing:
         self._panel_information()                                           # calculates attributes for panel information
 
         # structural modelling
+        self.a_ea = 0.5                                                     # distance LE to EA as a fraction of the chord
         self.fem = FEMBeam("wing_TangDowell.json")
         self._nearest_node()                                                # Attributes an array (nearest_node_indices) to self
 
@@ -65,7 +66,19 @@ class TangDowellWing:
         y_cops = y_cops[:, None]
         y_nd = self.fem.y_nd[None, :]
         diff_y = np.abs(y_cops - y_nd)
-        self.nearest_node_indices = np.argmin(diff_y, axis = 1)
+        nearest_node_indices = np.argmin(diff_y, axis = 1)
+        self.nearest_node_indices = np.tile(nearest_node_indices, (self.n_c, 1))     # Extend it to all panels on the right hand side of the wing
+
+        x_nd = self.a_ea * self.chord * np.ones((self.fem.n_nd,))
+        coords_nodes = np.zeros((self.fem.n_nd, 3))
+        coords_nodes[:, 0] = x_nd
+        coords_nodes[:, 1] = self.fem.y_nd
+        self.fem_node_coordinates = coords_nodes
+
+        panel_cop_right = self.panel_cop[:, self.n_s//2, :]
+        nearest_coords_nodes = coords_nodes[nearest_node_indices, :]
+
+        self.node_to_panel_vectors = panel_cop_right - nearest_coords_nodes
 
     def panel_corner_points(self):
 
@@ -138,3 +151,21 @@ class TangDowellWing:
         ax.set_zlim(z_mid - y_max - pad, z_mid + y_max + pad)
 
         plt.show()
+
+    def mapping_matrix(self):
+
+        cops = self.panel_cop.reshape(-1, 3)
+        nearest_node_indices = self.nearest_node_indices.reshape(-1, 3)
+        
+        def _last_row_W_matrix(fem_node_coordinate: np.ndarray, panel_cop_coordinate: np.ndarray):
+            r_ij = panel_cop_coordinate - fem_node_coordinate
+            return np.array([r_ij[0], 1, r_ij[1]])
+        
+        num_panels_half_wing = self.n_c * self.n_s // 2
+        T_as = np.zeros((num_panels_half_wing, self.fem.n_dof))
+        for i in range(num_panels_half_wing):
+            cop = cops[i]
+            fem_node_coord = self.fem_node_coordinates[nearest_node_indices[i]]
+            T_as[i, 3*i:3*i+3] = _last_row_W_matrix(fem_node_coord, cop)
+
+        T_as = np.concatenate((np.flip(T_as, axis = 1), T_as), axis = 1)                        # Add flipped matrix to itself to account for symmetry

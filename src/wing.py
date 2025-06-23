@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from src.fembeam import FEMBeam
 
 class TangDowellWing:
     """
@@ -14,26 +15,13 @@ class TangDowellWing:
         # geometric parameters
         self.semi_span = 0.451                              # [m] semi span of the wing
         self.chord = 0.051                                  # [m] wing chord (constant along span)
-        self.beam_mass = 0.2351                             # [kg/m] beam mass per unit length
-        self.I_p = 0.2056e-4                                # [kg m^2/m] polar moment of inertia scaled with beam density per unit length (rho * I_p)
-        self.d = 0.000508                                   # [m] distance from cross-sectional CG to the elastic axis, positive when CG is more aft than EA
-
+        
         # create discretisation (needs geometric params)
         self.wingpoints = self._generate_point_mesh(spacing_c, spacing_s)   # generate point mesh of the wing upon initialisation
         self._panel_information()                                           # calculates attributes for panel information
 
-        # structural parameters
-        self.EI = 0.4186                                    # [Nm^2] bending stiffness
-        self.GJ = 0.9539                                    # [Nm^2] torsional stiffness
-        self.K_BT = 0.0                                     # [Nm^2] bend-twist coupling coefficient (KBT**2 < EI*GJ)
-        self.zeta_B = 0.02                                  # [-] structural damping in bending, cB/cB_crit
-        self.zeta_T = 0.031                                 # [-] structural damping in torsion, cT/cT_crit
-
-        # discrete mass object
-        self.dmo_ay = 1                                     # [-] fraction of the span where the dmo is located
-        self.dmo_mass = 0.0417                              # [kg] mass of the discrete mass object
-        self.dmo_d = 0.0                                    # [m] distance of the discrete mass object to the elastic axis
-        self.dmo_I = 0.9753e-4                              # [kg m^2] dmo moment of inertia around the cg
+        # structural modelling
+        self.fem = FEMBeam("wing_TangDowell.json")
 
     def _generate_point_mesh(self, spacing_c: str, spacing_s: str) -> np.ndarray:
         """

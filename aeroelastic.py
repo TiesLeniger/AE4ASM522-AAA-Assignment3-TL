@@ -53,6 +53,10 @@ while it < max_iter:
     r, f, q = wing.map_aero_to_displ(delta_Lij, alpha)
     xi = wing.fem.calculate_displacement(r, f, q)
 
+    it += 1
+
 L_tot = np.sum(delta_Lij)
 CL = L_tot/(0.5*rho*v_inf*v_inf*wing.wing_area)
-print(CL)
+D_tot = np.sum(delta_Dij)
+CD = D_tot/(0.5*rho*v_inf*v_inf*wing.wing_area)
+print(CL, CD, it)

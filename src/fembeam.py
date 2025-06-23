@@ -200,6 +200,7 @@ class FEMBeam:
         self.dsc_DD_red = DD[self.b_u, :][:, self.b_u]
 
     def generate_load_vector(self, r: np.ndarray, f: np.ndarray, q: np.ndarray) -> np.ndarray:
+
         """
         This function distributes the loads to an appropriate DOF.
 
@@ -224,3 +225,19 @@ class FEMBeam:
         vec_load_red = vec_load[self.b_u]
 
         return vec_load_red
+    
+    def calculate_displacement(self, r: np.ndarray, f: np.ndarray, q: np.ndarray) -> np.ndarray:
+
+        f_weight = - self.m[0] * 9.81 * np.ones(self.n_nd)
+        structural_weight_load = self.dst_DD_red @ f_weight
+
+        external_loads = self.generate_load_vector(r, f, q)
+
+        load_vector = structural_weight_load + external_loads
+
+        u_red = np.linalg.solve(self.KK_red, load_vector)
+
+        u_full = np.zeros(self.n_dof)
+        u_full[self.b_u] = u_red
+
+        return u_full.reshape(self.n_nd, 3)

@@ -154,21 +154,16 @@ class TangDowellWing:
         plt.show()
 
     def mapping_displ_to_aero(self):
-
-        cops = (self.panel_cop[:, self.n_s//2:, :]).reshape(-1, 3)
-        nearest_node_indices = self.nearest_node_indices.flatten()
-        
-        def _last_row_W_matrix(fem_node_coordinate: np.ndarray, panel_cop_coordinate: np.ndarray):
-            r_ij = panel_cop_coordinate - fem_node_coordinate
-            return np.array([-1*r_ij[0], 1, r_ij[1]])
-        
+    
         num_panels_half_wing = self.n_c * self.n_s // 2
-        T_as = np.zeros((num_panels_half_wing, self.fem.n_dof))
+        T_as_R = np.zeros((num_panels_half_wing, self.fem.n_dof))
+        T_as_L = np.zeros_like(T_as_R)
+        node_to_panel = self.node_to_panel_vectors.reshape(-1, 3)
         for i in range(num_panels_half_wing):
-            cop = cops[i]
-            fem_node_coord = self.fem_node_coordinates[nearest_node_indices[i]]
-            T_as[i, 3*i:3*i+3] = _last_row_W_matrix(fem_node_coord, cop)
-
+            T_as_L[i, 3*i:3*i+3] = np.array([-1*node_to_panel[i, 0], 1.0, -1*node_to_panel[i, 1]])
+            T_as_R[i, 3*i:3*i+3] = np.array([-1*node_to_panel[i, 0], 1.0, node_to_panel[i, 1]])
+        T_as_L = np.flip(T_as_L, axis = 1)
+        T_as = np.concatenate((T_as_L, T_as_R), axis = 0)
         self.T_as = T_as
 
     def map_aero_to_displ(self, delta_Lij: np.ndarray, alpha: float):

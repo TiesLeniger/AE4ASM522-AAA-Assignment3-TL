@@ -63,7 +63,7 @@ class TangDowellWing:
 
     def _nearest_node(self):
         
-        y_cops = self.panel_cop[0, int(self.n_s/2):, 1]               # Rectangular wing means that all panels in a chordwise row have the same y_cop (only consider right side)
+        y_cops = self.panel_cop[0, self.n_s//2:, 1]               # Rectangular wing means that all panels in a chordwise row have the same y_cop (only consider right side)
         y_cops = y_cops[:, None]
         y_nd = self.fem.y_nd[None, :]
         diff_y = np.abs(y_cops - y_nd)
@@ -155,12 +155,12 @@ class TangDowellWing:
 
     def mapping_displ_to_aero(self):
 
-        cops = self.panel_cop.reshape(-1, 3)
+        cops = (self.panel_cop[:, self.n_s//2:, :]).reshape(-1, 3)
         nearest_node_indices = self.nearest_node_indices.flatten()
         
         def _last_row_W_matrix(fem_node_coordinate: np.ndarray, panel_cop_coordinate: np.ndarray):
             r_ij = panel_cop_coordinate - fem_node_coordinate
-            return np.array([r_ij[0], 1, r_ij[1]])
+            return np.array([-1*r_ij[0], 1, r_ij[1]])
         
         num_panels_half_wing = self.n_c * self.n_s // 2
         T_as = np.zeros((num_panels_half_wing, self.fem.n_dof))

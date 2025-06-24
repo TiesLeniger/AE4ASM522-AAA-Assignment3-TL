@@ -24,6 +24,16 @@ def drag_at_panels(gamma: np.ndarray, downwash: np.ndarray, wing: TangDowellWing
 
     return delta_Dij
 
+def spanwise_lift_distribution(gamma: np.ndarray, wing: TangDowellWing, v_inf: float) -> tuple[np.ndarray]:
+    gamma = gamma.reshape((wing.n_c, wing.n_s))
+    Clc = np.zeros_like(gamma)
+    Clc[0, :] = 2*gamma[0, :]/v_inf
+    Clc[1:, :] = 2*(gamma[1:, :] - gamma[:-1, :])/v_inf
+    Clc = np.sum(Clc, axis = 0)
+    Cl = Clc / wing.chord
+
+    return Clc, Cl
+
 def postprocessing(results: list, wing: TangDowellWing, rho: float, v_inf: float, make_plots: bool = True, save_plots: bool = False):
 
     C_L = []
@@ -48,11 +58,7 @@ def postprocessing(results: list, wing: TangDowellWing, rho: float, v_inf: float
 
         if make_plots:
             # spanwise lift distribution
-            Clc = np.zeros_like(gamma)
-            Clc[0, :] = 2*gamma[0, :]/v_inf
-            Clc[1:, :] = 2*(gamma[1:, :] - gamma[:-1, :])/v_inf
-            Clc = np.sum(Clc, axis = 0)
-            Cl = Clc/wing.chord
+            Clc, Cl = spanwise_lift_distribution(gamma, wing, v_inf)
             plt.plot(wing.panel_cop[0, :, 1], Clc, color = 'red', label = r'$C_{l_c}$')
             plt.plot(wing.panel_cop[0, :, 1], Cl, color = 'blue', label = r'$C_l$')
             plt.xlabel('y [m]')

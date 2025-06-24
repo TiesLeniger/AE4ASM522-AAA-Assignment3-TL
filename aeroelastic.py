@@ -18,7 +18,7 @@ alpha = 5.0 * D2R           # [deg -> rad], angle of attack
 l_wake_c = 30               # [-]
 
 # Instantiate wing
-wing = TangDowellWing(4, 16, "constant", "cosine")
+wing = TangDowellWing(3, 8, "constant", "cosine")
 
 # Make a displacement vector
 xi = np.zeros((wing.fem.n_dof,))
@@ -40,9 +40,10 @@ full_dw[:, te_panels_idx:] += wake_dw
 while it < max_iter:
     rhs = make_right_hand_side(wing, v_inf, alpha, xi, wing.T_as)
     gamma, info = gmres(full_im, rhs)
-
     if np.linalg.norm(gamma - gamma_prev) < tol:
         break
+
+    Clc, Cl = spanwise_lift_distribution(gamma, wing, v_inf)
 
     gamma_prev = gamma.copy()
 
@@ -59,4 +60,12 @@ L_tot = np.sum(delta_Lij)
 CL = L_tot/(0.5*rho*v_inf*v_inf*wing.wing_area)
 D_tot = np.sum(delta_Dij)
 CD = D_tot/(0.5*rho*v_inf*v_inf*wing.wing_area)
-print(CL, CD, it)
+
+plt.plot(wing.panel_cop[0, :, 1], Clc, color = 'red', label = r"$C_{l_c}$")
+plt.plot(wing.panel_cop[0, :, 1], Cl, color = 'blue', label = r"$C_{l}$")
+plt.xlabel('y [m]')
+plt.ylabel('Coefficient value [-]')
+plt.grid(True)
+plt.title(fr"Spanwise lift distribution VLM-FEM coupling $\alpha$ = {alpha*R2D} [deg]")
+plt.legend()
+plt.show()

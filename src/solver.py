@@ -33,7 +33,14 @@ def make_right_hand_side(wing: TangDowellWing, v_inf: float, alpha: float, xi: n
     v_inf_norm = v_inf
     v_inf = (v_inf * np.array([np.cos(alpha), 0.0, np.sin(alpha)]))[None, :]
     rhs = np.sum(-v_inf * wing.panel_normal.reshape(-1, 3), axis = 1, keepdims = False)
-    displacement_term = mapping_matrix @ xi
+    displacement_term_R = mapping_matrix @ xi
+    displacement_term = np.zeros((wing.n_c*wing.n_s,))
+    half_n_s = wing.n_s // 2
+    for i in range(wing.n_c):
+        right_side = displacement_term_R[i*half_n_s:(i+1)*half_n_s]
+        left_side = np.flip(right_side)
+        displacement_term[i*wing.n_s:(i+1)*wing.n_s] = np.concatenate((left_side, right_side), axis = 0)
+
     rhs += v_inf_norm * displacement_term
 
     return rhs

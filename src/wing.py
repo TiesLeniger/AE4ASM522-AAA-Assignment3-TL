@@ -156,15 +156,13 @@ class TangDowellWing:
     def mapping_displ_to_aero(self):
     
         num_panels_half_wing = self.n_c * self.n_s // 2
-        T_as_R = np.zeros((num_panels_half_wing, self.fem.n_dof))
-        T_as_L = np.zeros_like(T_as_R)
+        T_as = np.zeros((num_panels_half_wing, self.fem.n_dof))
         node_to_panel = self.node_to_panel_vectors.reshape(-1, 3)
         for i in range(num_panels_half_wing):
-            T_as_L[i, 3*i:3*i+3] = np.array([-1*node_to_panel[i, 0], 1.0, -1*node_to_panel[i, 1]])
-            T_as_R[i, 3*i:3*i+3] = np.array([-1*node_to_panel[i, 0], 1.0, node_to_panel[i, 1]])
-        T_as_L = np.flip(T_as_L, axis = 1)
-        T_as = np.concatenate((T_as_L, T_as_R), axis = 0)
+            T_as[i, 3*i:3*i+3] = np.array([-1*node_to_panel[i, 0], 1.0, node_to_panel[i, 1]])
+
         self.T_as = T_as
+        
 
     def map_aero_to_displ(self, delta_Lij: np.ndarray, alpha: float):
         f = np.zeros((self.fem.n_nd,))

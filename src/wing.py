@@ -167,7 +167,7 @@ class TangDowellWing:
     def map_aero_to_displ(self, delta_Lij: np.ndarray, alpha: float):
         f = np.zeros((self.fem.n_nd,))
         delta_Lij = delta_Lij[:, self.n_s//2:]
-        delta_Lij = (delta_Lij.flatten())[:, None] * np.array([np.sin(alpha), 0.0, np.cos(alpha)])[None, :]
+        delta_Lij = (-1*delta_Lij.flatten())[:, None] * np.array([np.sin(alpha), 0.0, np.cos(alpha)])[None, :]
         nn_idcs = self.nearest_node_indices.flatten()
         f[nn_idcs] = delta_Lij[:, 2]
         r_ij = self.node_to_panel_vectors.reshape(-1, 3)
